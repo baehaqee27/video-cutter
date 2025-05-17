@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Video Cutter - WA & IG Stories</title>
+    <!-- Bootstrap CSS CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://img.icons8.com/color/48/000000/video-editing.png"
+    />
+    <style>
+      body {
+        padding: 0;
+        background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 480px;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 32px rgba(0, 0, 0, 0.09);
+        padding: 2.5rem 2.5rem 2rem 2.5rem;
+        margin-top: 3rem;
+        margin-bottom: 3rem;
+      }
+      .brand-logo {
+        width: 56px;
+        margin-bottom: 1rem;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .dropzone {
+        border: 2px dashed #4f8cff;
+        border-radius: 12px;
+        background: #f1f5fb;
+        padding: 2rem 1rem;
+        text-align: center;
+        color: #4f8cff;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        margin-bottom: 1.5rem;
+      }
+      .dropzone.dragover {
+        background: #e0e7ff;
+        border-color: #2563eb;
+        color: #2563eb;
+      }
+      .dropzone input[type="file"] {
+        display: none;
+      }
+      .progress {
+        height: 32px;
+        background: #e9ecef;
+      }
+      #progress-bar {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      .footer {
+        text-align: center;
+        color: #888;
+        font-size: 0.95rem;
+        margin-top: 2rem;
+      }
+      .howto {
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+      }
+      .howto li {
+        margin-bottom: 0.5rem;
+      }
+      .filename-preview {
+        font-size: 1rem;
+        color: #2563eb;
+        margin-bottom: 1rem;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img
+        src="https://img.icons8.com/color/96/000000/video-editing.png"
+        alt="Video Cutter"
+        class="brand-logo"
+      />
+      <h1 class="mb-2 text-primary text-center fw-bold">
+        WA & IG Stories Cutter
+      </h1>
+      <p class="text-center text-secondary mb-4">
+        Potong video otomatis per 60 detik untuk status WhatsApp & Instagram
+        Stories.
+      </p>
+      <div class="howto mb-4">
+        <strong>Cara Pakai:</strong>
+        <ol class="mb-0">
+          <li>
+            Drag & drop file video ke area di bawah atau klik untuk memilih
+            file.
+          </li>
+          <li>Klik <b>Upload & Potong</b>.</li>
+          <li>Tunggu proses selesai (lihat progress bar).</li>
+          <li>Download potongan video satu per satu atau sekaligus (ZIP).</li>
+        </ol>
+      </div>
+      <form id="uploadForm" enctype="multipart/form-data" class="mb-4">
+        <div id="dropzone" class="dropzone">
+          <span id="dropzone-text"
+            ><i class="bi bi-cloud-arrow-up fs-3"></i><br />Drag & drop video di
+            sini atau klik untuk memilih</span
+          >
+          <input
+            type="file"
+            class="form-control"
+            name="video"
+            id="video"
+            accept="video/*"
+            required
+          />
+        </div>
+        <div
+          id="filename-preview"
+          class="filename-preview"
+          style="display: none"
+        ></div>
+        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+          <i class="bi bi-upload"></i> Upload & Potong
+        </button>
+      </form>
+      <div id="progress-section" style="display: none">
+        <div class="mb-2 text-center text-info fw-semibold">
+          Memproses video, mohon tunggu...
+        </div>
+        <div class="progress mb-2">
+          <div
+            id="progress-bar"
+            class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+            role="progressbar"
+            style="width: 0%"
+          >
+            0%
+          </div>
+        </div>
+      </div>
+      <div
+        class="alert alert-warning mt-3"
+        id="alert"
+        style="display: none"
+      ></div>
+    </div>
+    <div class="footer">
+      <span
+        >© {{ year or 2025 }}
+        <a
+          href="https://github.com/arizalb"
+          target="_blank"
+          class="text-decoration-none text-primary"
+          >Video Cutter App</a
+        >
+        &middot; Powered by Flask & MoviePy</span
+      >
+    </div>
+    <!-- Bootstrap JS & Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <script>
+      // Drag & Drop logic
+      const dropzone = document.getElementById("dropzone");
+      const fileInput = document.getElementById("video");
+      const filenamePreview = document.getElementById("filename-preview");
+      const dropzoneText = document.getElementById("dropzone-text");
+
+      dropzone.addEventListener("click", () => fileInput.click());
+
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+      dropzone.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          showFilename();
+        }
+      });
+      fileInput.addEventListener("change", showFilename);
+
+      function showFilename() {
+        if (fileInput.files.length) {
+          filenamePreview.style.display = "block";
+          filenamePreview.textContent = "File: " + fileInput.files[0].name;
+        } else {
+          filenamePreview.style.display = "none";
+          filenamePreview.textContent = "";
+        }
+      }
+
+      // Progress & upload logic
+      const form = document.getElementById("uploadForm");
+      const progressSection = document.getElementById("progress-section");
+      const progressBar = document.getElementById("progress-bar");
+      const alertBox = document.getElementById("alert");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        alertBox.style.display = "none";
+        if (!fileInput.files.length) {
+          alertBox.textContent = "Silakan pilih file video terlebih dahulu.";
+          alertBox.style.display = "block";
+          return;
+        }
+        progressSection.style.display = "block";
+        progressBar.style.width = "0%";
+        progressBar.textContent = "0%";
+
+        const formData = new FormData(form);
+
+        fetch("/", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Gagal upload video. Pastikan file valid.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.session_id) {
+              pollProgress(data.session_id);
+            } else {
+              throw new Error("Gagal memulai proses.");
+            }
+          })
+          .catch((err) => {
+            progressSection.style.display = "none";
+            alertBox.textContent = err.message;
+            alertBox.style.display = "block";
+          });
+      });
+
+      function pollProgress(session_id) {
+        const interval = setInterval(() => {
+          fetch(`/progress/${session_id}`)
+            .then((res) => res.json())
+            .then((data) => {
+              let percent = data.progress || 0;
+              progressBar.style.width = percent + "%";
+              progressBar.textContent = percent + "%";
+              if (percent >= 100) {
+                clearInterval(interval);
+                window.location.href = "/result/" + session_id;
+              }
+            });
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
